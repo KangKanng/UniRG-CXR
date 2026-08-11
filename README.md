@@ -96,6 +96,36 @@ Inference scripts default to `output/.../best-checkpoint`; override `CKPT_DIR`,
 must be supplied through your environment or `wandb login`; never store them in
 scripts.
 
+## Evaluation results
+
+We evaluated the full-parameter and LoRA SFT models on all 590 examples in the
+IU-Xray R2Gen test split. The LoRA results below use the second 590-example
+inference run (`lora_b` in the evaluation artifacts), reported here as
+`lora`.
+
+| Metric | full | lora |
+|---|---:|---:|
+| BLEU-1 | 0.1829 | 0.1943 |
+| BLEU-2 | 0.1171 | 0.1264 |
+| BLEU-3 | 0.0807 | 0.0869 |
+| BLEU-4 | 0.0548 | 0.0582 |
+| CIDEr | 0.2952 | 0.1718 |
+| ROUGE-L | 0.2848 | 0.2736 |
+| CheXbert micro-F1 (5 classes) | 0.0000 | 0.2034 |
+| CheXbert accuracy | 0.8017 | 0.6881 |
+| SembScore | 0.5156 | 0.4670 |
+| CheXbert micro-F1 (14 classes) | 0.5233 | 0.4764 |
+| BERTScore precision | 0.7929 | 0.7722 |
+| BERTScore recall | 0.6885 | 0.6788 |
+| BERTScore F1 | 0.7359 | 0.7201 |
+| F1 RadGraph | 0.2456 | 0.2137 |
+| RaTEScore | 0.5762 | 0.5581 |
+
+The LoRA prediction file contained two concatenated inference runs. The run
+used here includes 43 reports without an `Impression` section, 37 reports with
+a non-period ending, and one unusually long response; its scores should
+therefore be interpreted with this generation-quality caveat.
+
 ## Evaluate
 
 ```bash
