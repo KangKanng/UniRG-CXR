@@ -216,3 +216,25 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# UniRG-CXR local data, models, and experiment outputs
+artifacts/
+output/
+outputs/
+checkpoints/
+logs/
+wandb/
+weights/
+*.safetensors
+*.pth
+*.pt
+*.ckpt
+*.sqlite3
+*.tar.gz
+*.zip
+
+# Keep the small, documented ReXrank split manifests only.
+data/*
+!data/rexrank/
+!data/rexrank/*.jsonl
+!data/rexrank/PROVENANCE.md

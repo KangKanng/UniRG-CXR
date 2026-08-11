@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "evalkit"
+version = "0.2.0"
+description = "Chest X-ray report metrics including BLEU/CIDEr/ROUGE-L, clinical model metrics, and CheXprompt."
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+]
+
+[project.optional-dependencies]
+# Model metrics (chexbert, bertscore, f1radgraph, ratescore) load torch
+# weights via transformers. Pin nothing that would alter the environment's
+# torch; these are lower bounds only, installed via
+# `pip install -e ".[model]"` when model metrics are wanted.
+# medspacy is required by the RaTEScore backend (ratescore).
+model = [
+    "torch",
+    "transformers",
+    "scikit-learn",
+    "numpy",
+    "medspacy",
+]
+# back-compat alias
+chexbert = [
+    "torch",
+    "transformers",
+    "scikit-learn",
+    "numpy",
+]
+
+[project.scripts]
+evalkit = "evalkit.evaluator:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["evalkit*"]

@@ -1,2 +1,131 @@
 # UniRG-CXR
-An unofficial implementation of UniRG-CXR: Scaling Medical Imaging Report Generation with Multimodal Reinforcement Learning
+
+An unofficial implementation of *UniRG-CXR: Scaling Medical Imaging Report
+Generation with Multimodal Reinforcement Learning* (arXiv:2601.17151).
+
+We are currently conducting SFT experiments and reproducing the RL pipeline on public datasets. Results and implementations will be released progressively.
+
+This repository contains the reproducible code used to:
+
+- prepare IU-Xray and ReXGradient-160K as ms-swift JSONL datasets;
+- fine-tune Qwen3-VL-8B-Instruct with full-parameter or LoRA SFT;
+- run single- or eight-GPU inference; and
+- evaluate reports with BLEU, CIDEr, ROUGE-L, CheXbert, BERTScore, RadGraph,
+  RaTEScore, and CheXprompt.
+
+It is an independent reproduction, not the official implementation. Model
+weights, datasets, checkpoints, generated predictions, logs, and API keys are
+not distributed.
+
+## Repository layout
+
+```text
+main.py             Dataset preparation CLI
+scripts/            SFT and inference launchers
+data/rexrank/       IU-Xray R2Gen/ReXrank split manifests
+eval-kit/           Standalone report-evaluation package
+test_main.py        Data-pipeline tests
+```
+
+## Installation
+
+Python 3.12 and CUDA-capable hardware are recommended for training.
+
+```bash
+git clone https://github.com/KangKanng/UniRG-CXR.git
+cd UniRG-CXR
+
+# Create and activate your own virtual environment first, then:
+bash install.sh
+```
+
+The training stack is intentionally separate from `eval-kit`. For lightweight
+NLG evaluation:
+
+```bash
+python -m venv eval-kit/.venv
+eval-kit/.venv/bin/pip install -e ./eval-kit
+eval-kit/.venv/bin/python -m evalkit -m bleu cider rouge \
+  --ref "heart is normal" --hypo "heart is normal"
+```
+
+Model-based metrics additionally require their upstream packages and model
+weights. See [`eval-kit/README.md`](eval-kit/README.md) and configure weight
+paths with the documented `EVALKIT_*` environment variables. Weights are not
+downloaded or committed automatically.
+
+## Prepare data
+
+Download IU-Xray separately and place it anywhere on disk. Its directory must
+contain `indiana_projections.csv`, `indiana_reports.csv`, and
+`images/images_normalized/`.
+
+```bash
+python main.py prepare \
+  --iu-dir /path/to/iu-xray \
+  --split-dir data/rexrank \
+  --output-dir artifacts
+```
+
+For ReXGradient-160K, first run that dataset's preprocessing so that
+`processed/{train,valid,test}.jsonl` exists, then run:
+
+```bash
+python main.py prepare-rexgradient \
+  --rexgradient-dir /path/to/ReXGradient-160K \
+  --output-dir artifacts
+```
+
+## Train and infer
+
+Launchers accept environment-variable overrides. `MODEL` can be a Hugging Face
+model ID or a local model directory.
+
+```bash
+# LoRA or full SFT on 8 GPUs
+MODEL=Qwen/Qwen3-VL-8B-Instruct bash scripts/sft_lora_8gpu.sh
+MODEL=Qwen/Qwen3-VL-8B-Instruct bash scripts/sft_full_8gpu.sh
+
+# ReXGradient equivalents
+bash scripts/sft_lora_8gpu_rexgradient.sh
+bash scripts/sft_full_8gpu_rexgradient.sh
+```
+
+Inference scripts default to `output/.../best-checkpoint`; override `CKPT_DIR`,
+`FULL_CKPT`, or `LORA_CKPT` when your checkpoint is elsewhere. W&B credentials
+must be supplied through your environment or `wandb login`; never store them in
+scripts.
+
+## Evaluate
+
+```bash
+pip install -e ./eval-kit
+python -m evalkit -m bleu cider rouge \
+  --ref-file refs.txt --hypo-file hypos.txt --mode corpus
+```
+
+For the complete API and model-metric setup, see
+[`eval-kit/README.md`](eval-kit/README.md).
+
+## Tests
+
+```bash
+python -m unittest -v test_main.py
+python eval-kit/tests/test_evalkit.py
+python eval-kit/tests/test_chexprompt.py
+```
+
+## Scope and reproducibility
+
+The included SFT recipe follows the paper's three-epoch, `5e-5`, global batch
+size 256 configuration. The paper's full result additionally requires all
+training datasets, substantial multi-GPU compute, and two-stage GRPO. This
+repository does not claim reproduction of the paper's reported scores. See
+[`RESULTS.md`](RESULTS.md) for the local pipeline validation record.
+
+## License and attribution
+
+Project-authored code is released under the Apache License 2.0. Portions of
+the evaluation implementation are adapted from third-party projects; see
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and the upstream licenses
+before redistribution.

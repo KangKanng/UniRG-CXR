@@ -1,0 +1,7 @@
+[project]
+name = "uni-rg-cxr"
+version = "0.1.0"
+description = "Unofficial UniRG-CXR reproduction and evaluation toolkit"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
