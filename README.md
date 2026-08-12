@@ -126,6 +126,30 @@ used here includes 43 reports without an `Impression` section, 37 reports with
 a non-period ending, and one unusually long response; its scores should
 therefore be interpreted with this generation-quality caveat.
 
+We also evaluated both best checkpoints on the full ReXGradient-160K test
+split (10,000 examples, 8× A100 vLLM inference, temperature 0). Full SFT
+outperformed LoRA on all 15 metrics; the largest gaps are in clinical/semantic
+metrics (CheXbert micro-F1, RadGraph-F1, CIDEr) rather than lexical overlap.
+Full details and quality checks: [`eval-kit/EVAL_REPORT_REXGRADIENT.md`](eval-kit/EVAL_REPORT_REXGRADIENT.md).
+
+| Metric | full | lora |
+|---|---:|---:|
+| BLEU-1 | 0.3251 | 0.2876 |
+| BLEU-2 | 0.2572 | 0.2162 |
+| BLEU-3 | 0.2202 | 0.1794 |
+| BLEU-4 | 0.1962 | 0.1568 |
+| CIDEr | 1.5061 | 1.2218 |
+| ROUGE-L | 0.3866 | 0.3389 |
+| CheXbert micro-F1 (5 classes) | 0.3150 | 0.2464 |
+| CheXbert accuracy | 0.6198 | 0.6174 |
+| SembScore | 0.5216 | 0.4777 |
+| CheXbert micro-F1 (14 classes) | 0.4255 | 0.3854 |
+| BERTScore precision | 0.8055 | 0.7853 |
+| BERTScore recall | 0.7648 | 0.7442 |
+| BERTScore F1 | 0.7833 | 0.7628 |
+| F1 RadGraph | 0.3658 | 0.3147 |
+| RaTEScore | 0.6145 | 0.5730 |
+
 ## Evaluate
 
 ```bash
